@@ -1,0 +1,165 @@
+// Defines the database schema for all models in the application.
+// prisma/schema.prisma
+// update: add indexes for optimization (and looke like we don't need to add index for unique fields)
+
+datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+enum Role {
+    VOLUNTEER
+    EVENT_MANAGER
+    ADMIN
+}
+
+enum EventCategory {
+    ENVIRONMENT
+    EDUCATION
+    HEALTHCARE
+    COMMUNITY
+}
+
+enum RegistrationStatus {
+    PENDING
+    APPROVED
+    REJECTED
+    COMPLETED
+}
+
+enum EventStatus {
+    PENDING_APPROVAL
+    PUBLISHED
+    REJECTED
+}
+
+enum Gender {
+    MALE
+    FEMALE
+}
+
+enum UserStatus {
+    ACTIVE
+    LOCKED
+}
+
+// API generated is prisma.user
+model User {
+    id           String     @id @default(auto()) @map("_id") @db.ObjectId
+    name         String?
+    email        String     @unique
+    phone        String? //optional
+    address      String?
+    dateOfBirth  DateTime?
+    gender       Gender?
+    passwordHash String
+    role         Role       @default(VOLUNTEER)
+    status       UserStatus @default(ACTIVE)
+    imageUrl     String?
+    createdAt    DateTime   @default(now())
+    updatedAt    DateTime   @updatedAt
+
+    // an user can registry multiple event and have multiple post
+    registrations Registration[]
+    posts         Post[]
+
+    createdEvents      Event[]             @relation("EventCreator")
+    notifications      Notification[]
+    passwordResetToken PasswordResetToken?
+
+    @@index([role])
+    @@index([status])
+    @@index([createdAt])
+}
+
+model Event {
+    id            String        @id @default(auto()) @map("_id") @db.ObjectId
+    title         String
+    description   String
+    location      String
+    imageUrl      String?
+    startDateTime DateTime
+    endDateTime   DateTime
+    maxAttendees  Int
+    category      EventCategory @default(COMMUNITY)
+    status        EventStatus   @default(PENDING_APPROVAL)
+    createdAt     DateTime      @default(now())
+    updatedAt     DateTime      @updatedAt
+
+    // this event created by manager
+    creatorId String @db.ObjectId
+    creator   User   @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+
+    // an event can has multiple user and post
+    registrations Registration[]
+    posts         Post[]
+
+    @@index([status, startDateTime])
+    @@index([creatorId, createdAt])
+    @@index([category, startDateTime])
+    @@index([status, category])
+    @@index([startDateTime])
+}
+
+model Registration {
+    id        String             @id @default(auto()) @map("_id") @db.ObjectId
+    createdAt DateTime           @default(now())
+    status    RegistrationStatus @default(PENDING)
+
+    // Which user
+    userId String @db.ObjectId
+    user   User   @relation(fields: [userId], references: [id])
+
+    // Which event
+    eventId String @db.ObjectId
+    event   Event  @relation(fields: [eventId], references: [id])
+
+    // an user can only registry an event once
+    @@unique([userId, eventId])
+    @@index([userId, status])
+    @@index([eventId, status])
+    @@index([status, createdAt])
+}
+
+model Post {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    content   String
+    createdAt DateTime @default(now())
+
+    eventId String @db.ObjectId
+    event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+    authorId String @db.ObjectId
+    author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+    @@index([eventId, createdAt])
+}
+
+model Notification {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    message   String
+    href      String? // link to direct when click the notification
+    isRead    Boolean  @default(false)
+    createdAt DateTime @default(now())
+
+    userId String @db.ObjectId
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId, isRead, createdAt])
+}
+
+model PasswordResetToken {
+    id      String   @id @default(auto()) @map("_id") @db.ObjectId
+    token   String   @unique
+    expires DateTime
+
+    // 1 user will just have 1 token
+    userId String @unique @db.ObjectId
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([expires])
+}

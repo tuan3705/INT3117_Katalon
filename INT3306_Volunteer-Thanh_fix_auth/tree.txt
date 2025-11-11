@@ -1,0 +1,62 @@
+volunteerhub-app/
+├── .env                     # Chứa các biến môi trường bí mật (API keys, database URL)
+├── .next/                  
+├── node_modules/           
+├── package.json             
+├── prisma/                  # Mọi thứ liên quan đến database
+│   └── schema.prisma        # BẢN THIẾT KẾ: Định nghĩa cấu trúc database
+├── public/                  # Chứa các file tĩnh (ảnh, icon...)
+├── src/                     # Toàn bộ mã nguồn của ứng dụng
+│   ├── app/                 # TRÁI TIM: Quản lý routing và các trang
+│   │   ├── (auth)/          # Nhóm các trang xác thực (URL không có /auth/)
+│   │   │   ├── login/
+│   │   │   └── register/
+│   │   ├── (main)/          # Nhóm các trang chính (có Navbar chung)
+│   │   │   ├── created-events/
+│   │   │   ├── dashboard/
+│   │   │   ├── events/
+│   │   │   │   └── [eventId]/
+│   │   │   │       ├── edit/
+│   │   │   │       ├── manage/
+│   │   │   │       └── page.tsx
+│   │   │   ├── profile/
+│   │   │   └── registered-events/
+│   │   ├── admin/           # Khu vực dành riêng cho Admin (URL có /admin/)
+│   │   │   ├── event-approval/
+│   │   │   └── user-management/
+│   │   ├── api/             # BACKEND: Chứa tất cả các API endpoint
+│   │   │   ├── admin/
+│   │   │   │   ├── pending-events/
+│   │   │   │   └── users/
+│   │   │   │       ├── export/
+│   │   │   │       └── [userId]/
+│   │   │   ├── auth/
+│   │   │   │   └── [...nextauth]/
+│   │   │   ├── events/
+│   │   │   │   └── [eventId]/
+│   │   │   │       ├── posts/
+│   │   │   │       ├── registrations/
+│   │   │   │       └── register/
+│   │   │   ├── my-created-events/
+│   │   │   ├── notifications/
+│   │   │   ├── profile/
+│   │   │   └── registrations/
+│   │   │       └── [registrationId]/
+│   │   └── layout.tsx       # Layout GỐC, bao bọc toàn bộ ứng dụng
+│   ├── components/          # Chứa các MẢNH GHÉP giao diện tái sử dụng
+│   │   ├── features/        # Component phức tạp cho một tính năng cụ thể
+│   │   └── shared/          # Component dùng ở nhiều nơi (Navbar, Header)
+│   ├── lib/                 # Chứa các HÀM TIỆN ÍCH dùng chung
+│   │   └── prisma.ts        # Quản lý kết nối đến database
+│   ├── providers/           # Chứa các "nhà cung cấp" context
+│   │   └── auth-provider.tsx# Cung cấp session cho toàn ứng dụng
+│   └── types/               # Chứa các ĐỊNH NGHĨA kiểu dữ liệu
+│       └── next-auth.d.ts   # Mở rộng type của NextAuth
+└── ... (các file cấu hình khác)
+
+
+
+Có thể sẽ phải sửa:
+- Sẽ cần làm thêm 1 chỗ để admin có thể xem tất cả các events đã được duyệt chẳng hạn
+- có thể lúc đang đăng nhập thì bị khóa tài khoản, đợi đến lúc reload thì mới bị kick (chưa chawcs cái này)
+
