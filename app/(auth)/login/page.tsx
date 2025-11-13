@@ -19,6 +19,7 @@ export default function LoginPage() {
         password: '',
     });
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
     useEffect(() => {
         const error = searchParams.get('error');
@@ -38,6 +39,11 @@ export default function LoginPage() {
     // when submit
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!formData.email || !formData.password) {
+            setError("Vui lòng nhập đầy đủ email và mật khẩu.");
+            return;
+        }
+        setError("");
         setIsLoading(true);
 
         try {
@@ -63,13 +69,12 @@ export default function LoginPage() {
 
     return (
         <AuthContainer title="Chào mừng trở lại" subtitle="Đăng nhập vào tài khoản VolunteerHub của bạn">
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                 <AuthInput
                     id="email"
                     name="email"
                     type="email"
                     label="Địa chỉ Email"
-                    required
                     suppressHydrationWarning
                     value={formData.email}
                     onChange={handleChange}
@@ -81,7 +86,6 @@ export default function LoginPage() {
                     name="password"
                     type="password"
                     label="Mật khẩu"
-                    required
                     suppressHydrationWarning
                     value={formData.password}
                     onChange={handleChange}
@@ -95,6 +99,8 @@ export default function LoginPage() {
                         </Link>
                     }
                 />
+
+                {error && <p className="text-error text-sm mb-2">{error}</p>}
 
                 <button
                     type="submit"

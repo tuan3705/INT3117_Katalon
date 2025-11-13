@@ -143,7 +143,7 @@ export async function withRateLimit(
 // Pre-configured rate limiters for different endpoints
 export const authRateLimiter = new RateLimiter({
     interval: 15 * 60 * 1000, // 15 minutes
-    uniqueTokenPerInterval: 5, // 5 attempts per 15 minutes
+    uniqueTokenPerInterval: 1000, // 1000 attempts per 15 minutes
 });
 
 export const apiRateLimiter = new RateLimiter({
